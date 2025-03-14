@@ -15,15 +15,12 @@ class PartitionCacheTest {
 
         var kCache = new PartitionCache<PositionView>(this.buildDefaultConfig());
 
-        // 添加测试数据
         kCache.add(0, 100L, new PositionView("A"));
         kCache.add(0, 101L, new PositionView("B"));
         kCache.add(0, 102L, new PositionView("C"));
 
-        // 查询范围
         List<PositionView> result = kCache.getRange(0, 100L, 102L);
 
-        // 验证结果
         assertThat(result)
                 .extracting(PositionView::getKey)
                 .containsExactly("A", "B", "C");
