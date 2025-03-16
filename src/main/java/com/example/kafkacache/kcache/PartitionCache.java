@@ -5,9 +5,7 @@ import jakarta.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentNavigableMap;
-import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -17,6 +15,7 @@ import java.util.stream.Collectors;
 public class PartitionCache<T> {
 
     private final PartitionCacheConfiguration configuration;
+    private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     // hold for all partitions, key: partitionId, value: partition data
     private final ConcurrentHashMap<Integer, Partition<T>> storage = new ConcurrentHashMap<>();
@@ -26,6 +25,15 @@ public class PartitionCache<T> {
 
     public PartitionCache(PartitionCacheConfiguration configuration) {
         this.configuration = configuration;
+        this.scheduler.scheduleAtFixedRate(
+                this::scheduledCleanup,
+                this.configuration.getCleanupIntervalMillionSeconds(),
+                this.configuration.getCleanupIntervalMillionSeconds(),
+                TimeUnit.MILLISECONDS);
+    }
+
+    public void shutdown() {
+        scheduler.shutdown();
     }
 
     /**
@@ -59,6 +67,8 @@ public class PartitionCache<T> {
             if (this.needCleanup(partitionData)) {
                 this.performCleanup(partitionData);
             }
+
+            //TODO: add metrics
         } finally {
             lock.unlock();
         }
@@ -107,7 +117,18 @@ public class PartitionCache<T> {
             return Collections.emptyList();
         }
 
-        final var rangeData = partitionData.dataStorage.subMap(startOffset, true, endOffset, true);
+        var rangeData = partitionData.dataStorage;
+
+        if (startOffset != null && endOffset != null) {
+            rangeData = partitionData.dataStorage.subMap(startOffset, true, endOffset, true);
+
+        } else if (startOffset != null) {
+            rangeData = partitionData.dataStorage.tailMap(startOffset, true);
+
+        } else if (endOffset != null) {
+            rangeData = partitionData.dataStorage.headMap(endOffset, true);
+        }
+
         return rangeData.values().stream()
                 .map(CachedData::getPayload)
                 .toList();
@@ -135,6 +156,25 @@ public class PartitionCache<T> {
         partition.lastCleanTime = now;
     }
 
+    private void scheduledCleanup() {
+        this.storage.entrySet().parallelStream().forEach(entry -> {
+            final int partition = entry.getKey();
+            final var partitionData = entry.getValue();
+
+            var lock = this.partitionLocks.computeIfAbsent(partition, k -> new ReentrantLock());
+            lock.lock();
+
+            try {
+                if (this.needCleanup(partitionData)) {
+                    this.performCleanup(partitionData);
+                }
+
+                //TODO: add metrics
+            } finally {
+                lock.unlock();
+            }
+        });
+    }
 
     // a cache store for one partition
     private static class Partition<T> {

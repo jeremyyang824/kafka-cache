@@ -26,13 +26,16 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springframework.kafka:spring-kafka'
-	testImplementation 'org.projectlombok:lombok:1.18.28'
-	testImplementation 'org.projectlombok:lombok:1.18.28'
+
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.kafka:spring-kafka-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+//	testImplementation 'org.powermock:powermock-api-mockito2'
+//	testImplementation 'org.powermock:powermock-module-junit4'
 }
 
 tasks.named('test') {
