@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Debug Tool</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="stats-panel">
+        <div class="stats-grid">
+          <div class="stat-item">
+            <label>Status:</label>
+            <span id="connectionStatus" class="status-text">Disconnected</span>
+          </div>
+          <div class="stat-item">
+            <label>Messages Sent:</label>
+            <span id="sentCount">0</span>
+          </div>
+          <div class="stat-item">
+            <label>Messages Received:</label>
+            <span id="receivedCount">0</span>
+          </div>
+          <div class="stat-item">
+            <label>Total Data:</label>
+            <span id="totalBytes">0 B</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="requestPanel" class="request-panel">
+        <div id="requestPanelHeader" class="panel-header">
+          <div class="header-content">
+            <span id="statusIndicator" class="status-indicator"></span>
+            <span class="header-title">Connection & Request</span>
+            <span class="collapse-indicator">▼</span>
+          </div>
+        </div>
+        <div class="panel-content">
+          <div class="connection-section">
+            <input type="text" id="wsUrl" placeholder="WebSocket URL (ws:// or wss://)" value="ws://localhost:8080/event-endpoint">
+            <button id="connectBtn" class="connect-btn">Connect</button>
+          </div>
+          <div class="message-section">
+            <textarea id="messageInput" placeholder="Enter message to send"></textarea>
+            <button id="sendBtn" class="send-btn">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="response-panel">
+        <div class="panel-header">
+          <div class="header-content">
+            <span class="header-title">Message Log</span>
+            <div class="header-buttons">
+              <button id="exportBtn" class="export-btn">Export</button>
+              <button id="clearBtn" class="clear-btn">Clear</button>
+            </div>
+          </div>
+        </div>
+        <div id="responseArea" class="response-area"></div>
+      </div>
+    </div>
+
+    <script src="websocket-client.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
