@@ -2,11 +2,15 @@ package com.example.kafkacache.kcache;
 
 import jakarta.annotation.Nullable;
 
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
@@ -19,6 +23,8 @@ public class PartitionCache<T> {
 
     // hold for all partitions, key: partitionId, value: partition data
     private final ConcurrentHashMap<Integer, Partition<T>> storage = new ConcurrentHashMap<>();
+
+    private final ConcurrentHashMap<String, ConsumerState<T>> consumers = new ConcurrentHashMap<>();
 
     // locks for partitions, key: partitionI, value: lock
     private final ConcurrentHashMap<Integer, ReentrantLock> partitionLocks = new ConcurrentHashMap<>();
@@ -175,6 +181,77 @@ public class PartitionCache<T> {
             }
         });
     }
+
+    public void createConsumer(String consumerId, ConsumerConfig config) {
+        ConsumerState<T> state = new ConsumerState<>(config.getBatchSize());
+
+        storage.keySet().forEach(partition -> {
+            long initialOffset = config.getInitialOffsetFetcher().apply(partition);
+            state.committedOffsets.put(partition, new AtomicLong(initialOffset));
+            state.localOffsets.put(partition, initialOffset);
+        });
+
+        consumers.put(consumerId, state);
+    }
+
+    // （批量预取+零拷贝）
+    public List<T> poll(String consumerId, Duration timeout) {
+        ConsumerState<T> state = consumers.get(consumerId);
+        if (state == null) throw new IllegalArgumentException("Invalid consumer");
+
+        long endTime = System.currentTimeMillis() + timeout.toMillis();
+        List<T> results = new ArrayList<>();
+
+        while (System.currentTimeMillis() < endTime) {
+            for (Integer partition : state.localOffsets.keySet()) {
+                List<T> batch = fetchBatch(state, partition);
+                results.addAll(batch);
+                if (results.size() >= state.batchSize) break;
+            }
+            if (!results.isEmpty()) break;
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                break;
+            }
+        }
+
+        return Collections.unmodifiableList(results); // 零拷贝返回
+    }
+
+    // 批量获取数据（带本地offset缓存）
+    private List<T> fetchBatch(ConsumerState<T> state, int partition) {
+        long localOffset = state.localOffsets.get(partition);
+        Partition<T> partitionData = storage.get(partition);
+        if (partitionData == null) return Collections.emptyList();
+
+        // 获取数据视图（零拷贝）
+        ConcurrentNavigableMap<Long, CachedData<T>> subMap =
+                partitionData.dataStorage.tailMap(localOffset, false)
+                        .headMap(localOffset + state.batchSize);
+
+        List<T> batch = subMap.values().stream()
+                .map(CachedData::getPayload)
+                .collect(Collectors.toList());
+
+        if (!batch.isEmpty()) {
+            long newOffset = subMap.lastKey() + 1;
+            // 更新本地缓存（无锁）
+            state.localOffsets.put(partition, newOffset);
+        }
+
+        return batch;
+    }
+
+    public void subscribe(String consumerId, Consumer<T> callback) {
+        new Thread(() -> {
+            while (true) {
+                List<T> records = poll(consumerId, Duration.ofSeconds(1));
+                records.forEach(callback);
+            }
+        }).start();
+    }
+
 
     // a cache store for one partition
     private static class Partition<T> {
