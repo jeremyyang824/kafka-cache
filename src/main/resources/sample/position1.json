@@ -1,0 +1,80 @@
+{
+  "key": "DEFAULT-SPPR-11BBG32043",
+  "account": "SPPR",
+  "xref": "11BBG32043",
+  "timestamp": 123456789,
+  "position": {
+    "account": "SPPR",
+    "key": "DEFAULT-SPPR-11BBG32043",
+    "netPosition": 6000000,
+    "sodPosition": 6000000,
+    "whatisthis": "hello",
+    "price": 120.03,
+    "isFlatten": false,
+    "breakDowns": [
+      {
+        "type": "UNSETTLED",
+        "netPosition": 1000000
+      },
+      {
+        "type": "SETTLED",
+        "netPosition": 5000000
+      }
+    ],
+    "positionHistory": {
+      "tm1": {
+        "netPosition": 6000000,
+        "price": 119.88,
+        "isFlatten": false,
+        "breakDowns": [
+          {
+            "type": "UNSETTLED",
+            "netPosition": 500000
+          },
+          {
+            "type": "SETTLED",
+            "netPosition": 5500000
+          }
+        ]
+      },
+      "tm2": {
+        "netPosition": 5500000,
+        "price": 121.02,
+        "isFlatten": true,
+        "breakDowns": [
+          {
+            "type": "SETTLED",
+            "netPosition": 5500000
+          }
+        ]
+      },
+      "tm3": {
+        "netPosition": 5500000,
+        "price": 120.05,
+        "isFlatten": false,
+        "breakDowns": [
+          {
+            "type": "SETTLED",
+            "netPosition": 5500000
+          }
+        ]
+      }
+    },
+    "timestamp": 123456788
+  },
+  "indicative": {
+    "xref": "11BBG32043",
+    "bbgTicker": "IBM GNMA",
+    "agency": "GNMA",
+    "term": 30,
+    "coupon": 4.5,
+    "cpr1m": 0.03,
+    "cpr3m": 0.28,
+    "cpr6m": 0.46,
+    "cpr1y": 0.38,
+    "settlementDate": "2024-12-13",
+    "notificationDate": "2024-12-11",
+    "eventDateTime": "2025-03-11T09:00:00Z",
+    "timestamp": 123456787
+  }
+}

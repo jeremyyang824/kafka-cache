@@ -1,0 +1,14 @@
+{
+  "key": "DEFAULT-SPPR-11BBG32060",
+  "account": "SPPR",
+  "xref": "11BBG32060",
+  "timestamp": "123456791",
+  "indicative": {
+    "xref": "11BBG32060",
+    "bbgTicker": "GOOGL GNMA",
+    "agency": "GNMA",
+    "term": 40,
+    "coupon": 5.0,
+    "timestamp": "123456789"
+  }
+}

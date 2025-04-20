@@ -1,0 +1,32 @@
+{
+  "key": "DEFAULT-SPPR-11BBG32070",
+  "account": "SPPR",
+  "xref": "11BBG32070",
+  "timestamp": 123456792,
+  "position": {
+    "account": "SPPR",
+    "key": "DEFAULT-SPPR-11BBG32070",
+    "netPosition": 9000000,
+    "sodPosition": 9000000,
+    "price": 124.03,
+    "isFlatten": false,
+    "positionHistory": {
+      "tm1": {
+        "netPosition": 9000000,
+        "price": 123.88,
+        "isFlatten": false
+      },
+      "tm2": {
+        "netPosition": 8500000,
+        "price": 125.02,
+        "isFlatten": true
+      },
+      "tm3": {
+        "netPosition": 8500000,
+        "price": 124.05,
+        "isFlatten": false
+      }
+    },
+    "timestamp": 123456791
+  }
+}
