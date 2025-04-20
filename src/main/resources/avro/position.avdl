@@ -1,0 +1,51 @@
+namespace com.example;
+
+schema Position;
+
+record Position {
+	string key;
+	string account;
+	string xref;
+	long timestamp;
+	PositionDetails? position;
+	IndicativeDetails? indicative;
+}
+
+record PositionDetails {
+	string? account;
+	string? key;
+	long? netPosition;
+	long? sodPosition;
+	double? price;
+	boolean? isFlatten;
+	union{null, map<PositionHistory>} positionHistory;
+	union{null, array<BreakDown>} breakDowns;
+	long? timestamp;
+}
+
+record PositionHistory {
+	long? netPosition;
+	double? price;
+	boolean? isFlatten;
+	union{null, array<BreakDown>} breakDowns;
+}
+
+record BreakDown {
+	string? type;
+	long? netPosition;
+}
+
+record IndicativeDetails {
+	string? xref;
+	string? bbgTicker;
+	string? agency;
+	int? term;
+	double? coupon;
+	double? cpr1m;
+	double? cpr3m;
+	double? cpr6m;
+	double? cpr1y;
+	string? settlementDate;
+	string? notificationDate;
+	string? eventDateTime;
+}
